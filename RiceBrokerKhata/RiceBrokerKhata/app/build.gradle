@@ -1,0 +1,46 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.ricebroker.khata'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.ricebroker.khata'
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
+
+    // One fixed key for every build, so a new APK installs over the old one
+    // and your saved records stay. Keep khata-release.jks safe.
+    signingConfigs {
+        khata {
+            storeFile file('khata-release.jks')
+            storePassword 'ricekhata123'
+            keyAlias 'khata'
+            keyPassword 'ricekhata123'
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.khata
+        }
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.khata
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core:1.13.1'
+}

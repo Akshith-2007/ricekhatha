@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rice Broker Khata</title>
+<style>
+@font-face{font-family:"Young Serif";src:url(fonts/young-serif-latin-400-normal.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Hanken Grotesk";src:url(fonts/hanken-grotesk-latin-400-normal.woff2) format("woff2");font-weight:400 500;font-display:swap}
+@font-face{font-family:"Hanken Grotesk";src:url(fonts/hanken-grotesk-latin-700-normal.woff2) format("woff2");font-weight:600 700;font-display:swap}
+@font-face{font-family:"Hanken Grotesk";src:url(fonts/hanken-grotesk-latin-800-normal.woff2) format("woff2");font-weight:800 900;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+
+/* Layout: phone-first khata — one column of big cards, bottom menu bar, forms open as full-screen sheets */
+:root{
+  --bg:#F2F4EF; --surface:#FFFFFF; --sunk:#E8ECE5; --ink:#141A16; --muted:#4E5A51; --line:#CFD7CC;
+  --accent:#23603B; --accent-ink:#FFFFFF; --accent-soft:#DDEDE2;
+  --mill:#2D4E9B; --mill-bg:#E3E9F7; --shop:#8A520A; --shop-bg:#F6E9D3;
+  --due:#A8201A; --due-bg:#FBE6E3; --ok:#23603B; --ok-bg:#DDEDE2; --warn:#7A4F00; --warn-bg:#FAEFD3;
+  --f-display:"Young Serif", Georgia, "Times New Roman", serif;
+  --f-body:"Hanken Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --r:16px; --tap:56px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#101512; --surface:#1A211C; --sunk:#141A16; --ink:#EEF3EF; --muted:#AEBBB2; --line:#334037;
+  --accent:#7BCB97; --accent-ink:#0C170F; --accent-soft:#1D3526;
+  --mill:#9DB5F0; --mill-bg:#1E2843; --shop:#EBB563; --shop-bg:#352A1A;
+  --due:#F69087; --due-bg:#3B1F1C; --ok:#7BCB97; --ok-bg:#1D3526; --warn:#EDC872; --warn-bg:#362C14;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101512; --surface:#1A211C; --sunk:#141A16; --ink:#EEF3EF; --muted:#AEBBB2; --line:#334037;
+  --accent:#7BCB97; --accent-ink:#0C170F; --accent-soft:#1D3526;
+  --mill:#9DB5F0; --mill-bg:#1E2843; --shop:#EBB563; --shop-bg:#352A1A;
+  --due:#F69087; --due-bg:#3B1F1C; --ok:#7BCB97; --ok-bg:#1D3526; --warn:#EDC872; --warn-bg:#362C14;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.45;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-block:18px calc(110px + env(safe-area-inset-bottom, 0px))}
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1{font-family:var(--f-display);font-weight:400;font-size:1.8rem;margin:0;line-height:1.1}
+h2{font-family:var(--f-display);font-weight:400;font-size:1.45rem;margin:0;line-height:1.2;text-wrap:balance}
+.lbl{font-size:.9rem;font-weight:700;color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.panel{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+button.card{font:inherit;color:inherit;text-align:left;cursor:pointer;width:100%}
+button.card:active{background:var(--sunk)}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.between{justify-content:space-between}
+.big{font-size:2rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.med{font-size:1.35rem;font-weight:800;font-variant-numeric:tabular-nums}
+.due{color:var(--due)} .clear{color:var(--ok)} .adv{color:var(--mill)}
+.btn{appearance:none;font:inherit;font-weight:700;font-size:1.05rem;border-radius:14px;min-height:var(--tap);padding:12px 18px;cursor:pointer;border:2px solid var(--line);background:var(--surface);color:var(--ink);display:inline-flex;align-items:center;justify-content:center;gap:8px;text-align:center}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{color:var(--due);border-color:var(--due);background:var(--surface)}
+.btn.danger.solid{background:var(--due);color:var(--surface)}
+.btn.full{width:100%}
+.btn.huge{min-height:68px;font-size:1.2rem}
+.btn:disabled{opacity:.5}
+.btn:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.two>*{min-width:0}
+.pill{display:inline-block;font-size:.8rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:3px 10px;border-radius:999px}
+.pill.mill{background:var(--mill-bg);color:var(--mill)}
+.pill.shop{background:var(--shop-bg);color:var(--shop)}
+.pill.sample{background:var(--warn-bg);color:var(--warn)}
+.duecard{border-width:2px}
+.duecard.mill{border-color:var(--mill)}
+.duecard.shop{border-color:var(--shop)}
+.owecard{border:2px solid var(--due);background:var(--due-bg)}
+.owecard .big{font-size:2.4rem;color:var(--due)}
+.owecard .seeall{font-weight:800;color:var(--due);font-size:1.05rem}
+.oweline.mill{border-left:6px solid var(--mill)}
+.oweline.shop{border-left:6px solid var(--shop)}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--sunk);border-radius:14px;padding:4px;gap:4px}
+.seg button{appearance:none;border:0;background:none;font:inherit;font-weight:800;color:var(--muted);min-height:50px;border-radius:11px;cursor:pointer}
+.seg button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.daynav{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
+.daynav .btn{min-width:var(--tap);padding:0}
+.daycard{border:2px solid var(--accent)}
+.datehead{font-weight:800;color:var(--muted);font-size:.95rem;padding:6px 4px 0}
+.entry .route{font-weight:700;font-size:1.05rem;overflow-wrap:anywhere}
+.entry .arrow{color:var(--muted);font-weight:400}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.kv:last-child{border-bottom:0}
+.kv span:last-child{font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.payline{background:var(--ok-bg)}
+.marker{background:var(--warn-bg);color:var(--warn);border-radius:12px;padding:10px 14px;font-weight:800}
+.period{border:2px dashed var(--accent);background:var(--accent-soft);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:6px}
+.banner{border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.banner.warn{background:var(--warn-bg);color:var(--warn)}
+.banner.bad{background:var(--due-bg);color:var(--due)}
+.empty{padding:26px 12px;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:8px;align-items:center}
+.empty strong{color:var(--ink);font-size:1.15rem}
+.back{appearance:none;border:0;background:none;font:inherit;font-weight:700;color:var(--accent);min-height:48px;padding:0 4px;cursor:pointer;align-self:flex-start;font-size:1.05rem}
+/* forms */
+label.f{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:1rem;min-width:0}
+label.f small{font-weight:500;color:var(--muted);font-size:.88rem}
+input,select{font:inherit;font-size:1.15rem;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;min-height:var(--tap);padding:10px 14px;width:100%;min-width:0}
+input::placeholder{color:var(--muted);opacity:.8}
+.calc{background:var(--sunk);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.calc .t{font-size:1.4rem;font-weight:800;font-variant-numeric:tabular-nums}
+.search{display:flex;gap:10px}
+.search input{flex:1}
+/* bottom nav */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1.5px solid var(--line);
+  padding:6px max(8px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px))}
+.nav .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:2px}
+.nav button{appearance:none;border:0;background:none;color:var(--muted);font:inherit;font-size:.85rem;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;min-height:62px;border-radius:12px;cursor:pointer}
+.nav button svg{width:26px;height:26px}
+.nav button[aria-current="page"]{color:var(--accent);background:var(--accent-soft)}
+/* sheet */
+.overlay{position:fixed;inset:0;background:rgba(8,12,9,.55);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:640px;max-height:94%;border-radius:22px 22px 0 0;display:flex;flex-direction:column;overflow:hidden}
+.sheet-h{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px max(16px, env(safe-area-inset-right, 0px)) 12px max(16px, env(safe-area-inset-left, 0px));border-bottom:1.5px solid var(--line)}
+.sheet-b{overflow-y:auto;padding:16px max(16px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));display:flex;flex-direction:column;gap:16px}
+.x{appearance:none;border:2px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:700;border-radius:12px;min-height:48px;padding:0 16px;cursor:pointer}
+@media (min-width:700px){.overlay{align-items:center}.sheet{border-radius:22px;max-height:90%}}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom, 0px));background:var(--ink);color:var(--bg);padding:14px 18px;border-radius:14px;font-weight:700;z-index:60;width:max-content;max-width:calc(100% - 32px);text-align:center}
+.spark{display:block;max-width:100%}
+textarea{font:inherit;width:100%;border:2px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);padding:10px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="row between">
+    <div><h1>Rice Broker Khata</h1><div class="muted" id="hdrSub">Mills → Shops</div></div>
+  </header>
+  <div id="banners"></div>
+  <section class="panel" id="tab-home"></section>
+  <section class="panel" id="tab-entries" hidden></section>
+  <section class="panel" id="tab-mills" hidden></section>
+  <section class="panel" id="tab-shops" hidden></section>
+  <section class="panel" id="tab-rice" hidden></section>
+  <section class="panel" id="tab-payments" hidden></section>
+  <section class="panel" id="tab-dues" hidden></section>
+</div>
+
+<nav class="nav" aria-label="Main menu"><div class="in">
+  <button data-nav="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>Home</button>
+  <button data-nav="entries"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Entries</button>
+  <button data-nav="mills"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V10l5 3V10l5 3V5h4l1 4h3v12z"/></svg>Mills</button>
+  <button data-nav="shops"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l2-5h14l2 5"/><path d="M4 9v11h16V9"/><path d="M9 20v-6h6v6"/></svg>Shops</button>
+  <button data-nav="rice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19l5-6 4 3 7-9"/><path d="M15 7h5v5"/></svg>Rates</button>
+</div></nav>
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+
+<script>
+(function(){
+const S={parties:[],deals:[],payments:[],tab:'home',view:{mills:null,shops:null,rice:null},search:'',from:'',to:'',showDates:false,loaded:false};
+let mode='live';
+const $=id=>document.getElementById(id);
+const TABS=['home','entries','mills','shops','rice','payments','dues'];
+
+/* ---------- helpers ---------- */
+const sum=a=>a.reduce((s,x)=>s+(+x||0),0);
+const r2=n=>Math.round((+n||0)*100)/100;
+const fmtR=n=>{const v=r2(n);return (v<0?'−₹':'₹')+Math.abs(v).toLocaleString('en-IN',{maximumFractionDigits:2})};
+const fmtQ=n=>r2(n).toLocaleString('en-IN',{maximumFractionDigits:2});
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fmtD=iso=>iso?(+iso.slice(8,10))+' '+MON[+iso.slice(5,7)-1]+' '+iso.slice(0,4):'—';
+const csvD=iso=>iso?iso.slice(8,10)+'-'+iso.slice(5,7)+'-'+iso.slice(0,4):'';
+const isoOf=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const today=()=>isoOf(new Date());
+const nextDay=iso=>{const d=new Date(iso+'T00:00:00');d.setDate(d.getDate()+1);return isoOf(d)};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const byDate=(a,b)=>(a.date||'').localeCompare(b.date||'')||((a.createdAt||0)-(b.createdAt||0));
+const riceKey=s=>String(s||'').trim().toLowerCase().replace(/\s+/g,' ');
+const party=id=>S.parties.find(p=>p.id===id);
+const pname=id=>party(id)?.name||'(removed)';
+function toast(msg){const r=$('toastRoot');r.innerHTML='<div class="toast" role="status">'+esc(msg)+'</div>';clearTimeout(toast.t);toast.t=setTimeout(()=>r.innerHTML='',3000)}
+const samplePill=x=>x.sample?' <span class="pill sample">sample</span>':'';
+
+/* ---------- store: everything is kept on this phone ---------- */
+const KEY='rk-data-v1';
+const hasAndroid=()=>!!(window.Android&&window.Android.saveData);
+function parseData(t){try{const j=JSON.parse(t||'');if(j&&Array.isArray(j.deals))return j}catch(e){}return null}
+function loadLocal(){
+  let a=null,b=null;
+  try{a=parseData(localStorage.getItem(KEY))}catch(e){}
+  if(hasAndroid()){try{b=parseData(window.Android.loadData())}catch(e){}}
+  const best=[a,b].filter(Boolean).sort((x,y)=>(y.savedAt||0)-(x.savedAt||0))[0];
+  if(best)['parties','deals','payments'].forEach(c=>S[c]=Array.isArray(best[c])?best[c]:[]);
+}
+function snapshot(){return {app:'rice-broker-khata',v:1,savedAt:Date.now(),parties:S.parties,deals:S.deals,payments:S.payments}}
+function persist(){
+  const json=JSON.stringify(snapshot());let ok=false;
+  try{localStorage.setItem(KEY,json);ok=true}catch(e){}
+  if(hasAndroid()){try{window.Android.saveData(json);ok=true}catch(e){}}
+  if(!ok)toast('Could not save on this phone. Free some space and try again.');
+  return ok;
+}
+async function put(coll,id,data){
+  const doc=Object.assign({},data,{id});const i=S[coll].findIndex(x=>x.id===id);
+  if(i>=0)S[coll][i]=doc;else S[coll].push(doc);
+  if(!persist())throw new Error('save failed');
+  setTimeout(render,0);
+}
+async function del(coll,id){S[coll]=S[coll].filter(x=>x.id!==id);persist();setTimeout(render,0)}
+
+/* ---------- maths ---------- */
+function comm(d,p){return p.type==='mill'?(+d.qtl||0)*(+d.millComm||0):(+d.qtl||0)*(+d.shopComm||0)}
+function stats(p){
+  const ds=S.deals.filter(d=>p.type==='mill'?d.millId===p.id:d.shopId===p.id).sort(byDate);
+  const ps=S.payments.filter(x=>x.partyId===p.id).sort(byDate);
+  const earned=sum(ds.map(d=>comm(d,p))),paid=sum(ps.map(x=>x.amount));
+  const settled=ps.reduce((m,x)=>x.uptoDate&&x.uptoDate>m?x.uptoDate:m,'');
+  const periodDeals=ds.filter(d=>!settled||d.date>settled);
+  const periodAmt=sum(periodDeals.map(d=>comm(d,p)));
+  return {ds,ps,earned,paid,balance:earned-paid,settled,periodDeals,periodAmt,carry:earned-periodAmt-paid,qtl:sum(ds.map(d=>d.qtl)),last:ds.length?ds[ds.length-1].date:''};
+}
+function earnedUpto(p,upto){const ds=S.deals.filter(d=>(p.type==='mill'?d.millId===p.id:d.shopId===p.id)&&d.date<=upto);return {amt:sum(ds.map(d=>comm(d,p))),ds}}
+function balText(b){return Math.abs(b)<0.005?'<span class="clear">All clear</span>':b>0?'<span class="due">'+fmtR(b)+'</span>':'<span class="adv">'+fmtR(-b)+' advance</span>'}
+
+/* ---------- downloads ---------- */
+function csv(rows){return rows.map(r=>r.map(v=>{v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(',')).join('\r\n')}
+async function saveCSV(name,rows){offerFile(name,'\ufeff'+csv(rows),'Download list')}
+function offerFile(name,data,title){
+  sheet(title,`<p style="margin:0;overflow-wrap:anywhere"><b>${esc(name)}</b></p><p class="muted" style="margin:0">Opens in Excel or Google Sheets.</p>
+  <button class="btn primary huge full" id="sfSave">Save to phone</button>
+  <button class="btn huge full" id="sfShare">Send (WhatsApp, Drive, Gmail)</button>`,()=>{
+    $('sfSave').onclick=()=>{
+      if(!window.Android){browserSave(name,data);closeSheet();return}
+      const r=window.Android.saveFile(name,data);
+      if(r==='ok'){closeSheet();toast('Saved in Downloads › Rice Khata')}
+      else if(r==='share'){window.Android.shareFile(name,data);closeSheet()}
+      else toast('Could not save: '+r);
+    };
+    $('sfShare').onclick=()=>{
+      if(!window.Android){browserSave(name,data);closeSheet();return}
+      const r=window.Android.shareFile(name,data);if(r!=='ok')toast('Could not send: '+r);closeSheet();
+    };
+  });
+}
+function browserSave(name,data){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'text/plain'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+
+/* ---------- backup & restore ---------- */
+function backupSheet(){
+  let last='';try{last=localStorage.getItem('rk-last-backup')||''}catch(e){}
+  const n=S.deals.length+S.payments.length;
+  sheet('Backup & restore',`
+  <div class="card"><span class="lbl">Your records on this phone</span><span class="med">${S.deals.length} loads · ${S.payments.length} payments · ${S.parties.length} mills & shops</span>
+  <span class="muted">${last?'Last backup: '+fmtD(last):'No backup made yet'}</span></div>
+  <p style="margin:0">Your records live only on this phone. Make a backup every week and send it to Google Drive or to yourself on WhatsApp. If the phone is lost or changed, install the app again and restore the backup.</p>
+  <button class="btn primary huge full" id="bkSend" ${n?'':'disabled'}>Send backup (Drive, WhatsApp)</button>
+  <button class="btn huge full" id="bkSave" ${n?'':'disabled'}>Save backup to phone</button>
+  <h2>Restore</h2>
+  <p class="muted" style="margin:0">Choose a backup file (.json). It replaces all records on this phone. You can also restore a backup downloaded from the online khata.</p>
+  <label class="btn huge full" for="bkFile">Choose backup file</label>
+  <input type="file" id="bkFile" accept=".json,application/json,text/plain" hidden>
+  <div id="bkPreview" class="stack"></div>`,()=>{
+    const data=()=>JSON.stringify(snapshot(),null,1),name=()=>'rice-khata-backup-'+today()+'.json';
+    const mark=()=>{try{localStorage.setItem('rk-last-backup',today())}catch(e){}};
+    $('bkSend').onclick=()=>{if(!window.Android){browserSave(name(),data());mark();return}const r=window.Android.shareFile(name(),data());if(r==='ok')mark();else toast('Could not send: '+r)};
+    $('bkSave').onclick=()=>{if(!window.Android){browserSave(name(),data());mark();toast('Backup saved');return}
+      const r=window.Android.saveFile(name(),data());if(r==='ok'){mark();toast('Backup saved in Downloads › Rice Khata')}else if(r==='share'){window.Android.shareFile(name(),data());mark()}else toast('Could not save: '+r)};
+    $('bkFile').addEventListener('change',e=>{
+      const f=e.target.files&&e.target.files[0];if(!f)return;
+      const rd=new FileReader();
+      rd.onload=()=>{
+        const j=parseData(rd.result);const box=$('bkPreview');
+        if(!j||!Array.isArray(j.parties)||!Array.isArray(j.payments)){box.innerHTML='<div class="banner bad">This is not a Rice Khata backup file.</div>';return}
+        box.innerHTML=`<div class="card"><span class="lbl">In this backup</span><span class="med">${j.deals.length} loads · ${j.payments.length} payments · ${j.parties.length} mills & shops</span>${j.savedAt?'<span class="muted">Made on '+fmtD(isoOf(new Date(j.savedAt)))+'</span>':''}</div>
+        <button class="btn danger huge full" id="bkDo">Replace my records with this backup</button>`;
+        armButton($('bkDo'),'Tap again to replace everything',async()=>{
+          S.parties=j.parties.map(x=>Object.assign({},x));S.deals=j.deals.map(x=>Object.assign({},x));S.payments=j.payments.map(x=>Object.assign({},x));
+          if(!persist())throw new Error('save failed');closeSheet();S.view={mills:null,shops:null,rice:null};S.day=null;showTab('home');toast('Backup restored');
+        });
+      };
+      rd.readAsText(f);
+    });
+  });
+}
+
+function partyListRows(type){
+  const rows=[['Name','Phone','Place','Entries','Quintals','Total commission','Paid','Balance','Settled till','Current period from','Current period amount']];
+  S.parties.filter(p=>p.type===type).sort((a,b)=>a.name.localeCompare(b.name)).forEach(p=>{const s=stats(p);
+    rows.push([p.name,p.phone||'',p.place||'',s.ds.length,r2(s.qtl),r2(s.earned),r2(s.paid),r2(s.balance),csvD(s.settled),s.settled?csvD(nextDay(s.settled)):'Start',r2(s.periodAmt)])});
+  return rows;
+}
+function entriesRows(ds){
+  const rows=[['Date','Rice mill','Shop','Rice','Quintals','Rice rate (Rs/qtl)','Mill comm (Rs/qtl)','Mill comm amount','Shop comm (Rs/qtl)','Shop comm amount','Total commission','Note']];
+  ds.slice().sort(byDate).forEach(d=>rows.push([csvD(d.date),pname(d.millId),pname(d.shopId),d.rice,d.qtl,d.rate??'',d.millComm,r2(d.qtl*d.millComm),d.shopComm,r2(d.qtl*d.shopComm),r2(d.qtl*(d.millComm+d.shopComm)),d.note||'']));
+  return rows;
+}
+
+/* ---------- sheet (full-screen popup) ---------- */
+function sheet(title,body,onMount){
+  $('modalRoot').innerHTML=`<div class="overlay" id="ov"><div class="sheet" role="dialog" aria-modal="true" aria-label="${title}"><div class="sheet-h"><h2>${title}</h2><button class="x" data-close>Close</button></div><div class="sheet-b">${body}</div></div></div>`;
+  $('ov').addEventListener('click',e=>{if(e.target.id==='ov'||e.target.closest('[data-close]'))closeSheet()});
+  document.body.style.overflow='hidden';
+  onMount&&onMount();
+}
+function closeSheet(){$('modalRoot').innerHTML='';document.body.style.overflow=''}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('ov'))closeSheet()});
+function armButton(btn,label,fn){btn.addEventListener('click',async()=>{if(!btn.dataset.armed){btn.dataset.armed='1';btn.textContent=label;btn.classList.add('solid');return}btn.disabled=true;try{await fn()}catch(e){btn.disabled=false}})}
+
+/* ---------- entry form ---------- */
+function partyOptions(type,sel){
+  const list=S.parties.filter(p=>p.type===type).sort((a,b)=>a.name.localeCompare(b.name));
+  return '<option value="">Choose '+(type==='mill'?'mill':'shop')+'</option>'+list.map(p=>`<option value="${p.id}" ${p.id===sel?'selected':''}>${esc(p.name)}</option>`).join('')+'<option value="__new">＋ Add a new '+(type==='mill'?'mill':'shop')+'</option>';
+}
+function lastComm(type,id){
+  const ds=S.deals.filter(d=>type==='mill'?d.millId===id:d.shopId===id).sort(byDate);
+  if(ds.length)return type==='mill'?ds[ds.length-1].millComm:ds[ds.length-1].shopComm;
+  return party(id)?.defComm??'';
+}
+function entryForm(id){
+  const d=id?S.deals.find(x=>x.id===id):null;
+  if(mode==='offline'){toast('Saving is not available here.');return}
+  const vs=new Map();S.deals.forEach(x=>{const k=riceKey(x.rice);if(k&&!vs.has(k))vs.set(k,x.rice.trim())});
+  sheet(d?'Change entry':'New entry',`
+  <form id="ef" class="stack" autocomplete="off">
+    <label class="f">Date<input type="date" id="fDate" value="${d?d.date:today()}" required></label>
+    <label class="f">Rice mill<select id="fMill">${partyOptions('mill',d?.millId)}</select><input id="fMillNew" placeholder="Type new mill name" hidden></label>
+    <label class="f">Shop<select id="fShop">${partyOptions('shop',d?.shopId)}</select><input id="fShopNew" placeholder="Type new shop name" hidden></label>
+    <label class="f">Rice type<input id="fRice" list="riceList" value="${esc(d?.rice||'')}" placeholder="e.g. Sona Masoori"><datalist id="riceList">${[...vs.values()].sort().map(v=>`<option value="${esc(v)}">`).join('')}</datalist></label>
+    <label class="f">How many quintals?<input type="number" inputmode="decimal" id="fQtl" step="0.01" min="0" value="${d?d.qtl:''}" placeholder="0"></label>
+    <label class="f">Rice price per quintal <small>(optional, for rice rates)</small><input type="number" inputmode="decimal" id="fRate" step="0.01" min="0" value="${d?.rate??''}" placeholder="₹"></label>
+    <div class="two">
+      <label class="f">Mill gives you <small>₹ per quintal</small><input type="number" inputmode="decimal" id="fMillC" step="0.01" min="0" value="${d?d.millComm:''}" placeholder="₹"></label>
+      <label class="f">Shop gives you <small>₹ per quintal</small><input type="number" inputmode="decimal" id="fShopC" step="0.01" min="0" value="${d?d.shopComm:''}" placeholder="₹"></label>
+    </div>
+    <label class="f">Note <small>(optional: lorry no., bill no.)</small><input id="fNote" value="${esc(d?.note||'')}"></label>
+    <div class="calc" id="fCalc"></div>
+    <button class="btn primary huge full" type="submit" id="fSave">${d?'Save changes':'Save entry'}</button>
+  </form>`,()=>{
+    const calc=()=>{const q=+$('fQtl').value||0,mc=+$('fMillC').value||0,sc=+$('fShopC').value||0,rt=+$('fRate').value||0;
+      $('fCalc').innerHTML=`<span class="lbl">You earn from this load</span><span class="t">${fmtR(q*(mc+sc))}</span><span class="muted">Mill ${fmtR(q*mc)} + Shop ${fmtR(q*sc)}${rt?' · Rice worth '+fmtR(q*rt):''}</span>`};
+    ['fQtl','fMillC','fShopC','fRate'].forEach(i=>$(i).addEventListener('input',calc));calc();
+    const pick=(sel,nw,type,cf)=>$(sel).addEventListener('change',e=>{const v=e.target.value;$(nw).hidden=v!=='__new';if(v==='__new'){$(nw).focus();return}if(v){const c=lastComm(type,v);if(c!==''&&c!=null){$(cf).value=c;calc()}}});
+    pick('fMill','fMillNew','mill','fMillC');pick('fShop','fShopNew','shop','fShopC');
+    $('ef').addEventListener('submit',async e=>{
+      e.preventDefault();
+      let millId=$('fMill').value,shopId=$('fShop').value;const nm=$('fMillNew').value.trim(),ns=$('fShopNew').value.trim();
+      const miss=[];if(!$('fDate').value)miss.push('date');if(!millId||(millId==='__new'&&!nm))miss.push('mill');if(!shopId||(shopId==='__new'&&!ns))miss.push('shop');
+      if(!$('fRice').value.trim())miss.push('rice type');if(!(+$('fQtl').value>0))miss.push('quintals');
+      if($('fMillC').value==='')miss.push('mill ₹ per quintal');if($('fShopC').value==='')miss.push('shop ₹ per quintal');
+      if(miss.length){toast('Please fill: '+miss.join(', '));return}
+      const btn=$('fSave');btn.disabled=true;btn.textContent='Saving…';
+      try{
+        if(millId==='__new'){millId=uid();await put('parties',millId,{type:'mill',name:nm,defComm:+$('fMillC').value||null,createdAt:Date.now()})}
+        if(shopId==='__new'){shopId=uid();await put('parties',shopId,{type:'shop',name:ns,defComm:+$('fShopC').value||null,createdAt:Date.now()})}
+        const data={date:$('fDate').value,millId,shopId,rice:$('fRice').value.trim(),qtl:+$('fQtl').value,rate:$('fRate').value===''?null:+$('fRate').value,millComm:+$('fMillC').value,shopComm:+$('fShopC').value,note:$('fNote').value.trim(),createdAt:d?.createdAt||Date.now()};
+        if(d?.sample)data.sample=true;
+        await put('deals',d?d.id:uid(),data);closeSheet();toast(d?'Entry changed':'Saved for '+pname(millId)+' and '+pname(shopId));
+      }catch(err){btn.disabled=false;btn.textContent=d?'Save changes':'Save entry'}
+    });
+  });
+}
+function entryDetail(id){
+  const d=S.deals.find(x=>x.id===id);if(!d)return;
+  sheet('Entry of '+fmtD(d.date),`
+  <div class="card"><div class="kv"><span class="muted">Rice mill</span><span>${esc(pname(d.millId))}</span></div><div class="kv"><span class="muted">Shop</span><span>${esc(pname(d.shopId))}</span></div>
+  <div class="kv"><span class="muted">Rice</span><span>${esc(d.rice)}</span></div><div class="kv"><span class="muted">Quintals</span><span>${fmtQ(d.qtl)}</span></div>
+  <div class="kv"><span class="muted">Rice price</span><span>${d.rate!=null?fmtR(d.rate)+' / qtl':'—'}</span></div>
+  <div class="kv"><span class="muted">From mill</span><span>${fmtR(d.qtl*d.millComm)} <span class="muted">(₹${fmtQ(d.millComm)}/qtl)</span></span></div>
+  <div class="kv"><span class="muted">From shop</span><span>${fmtR(d.qtl*d.shopComm)} <span class="muted">(₹${fmtQ(d.shopComm)}/qtl)</span></span></div>
+  <div class="kv"><span class="muted">You earn</span><span class="med">${fmtR(d.qtl*(d.millComm+d.shopComm))}</span></div>
+  ${d.note?`<div class="kv"><span class="muted">Note</span><span>${esc(d.note)}</span></div>`:''}</div>
+  <button class="btn primary full" id="edEdit">Change this entry</button>
+  <button class="btn danger full" id="edDel">Delete this entry</button>`,()=>{
+    $('edEdit').onclick=()=>entryForm(id);
+    armButton($('edDel'),'Tap again to delete',async()=>{await del('deals',id);closeSheet();toast('Entry deleted')});
+  });
+}
+
+/* ---------- party & payment sheets ---------- */
+function partyForm(type,p){
+  const isNew=!p;p=p||{type,name:'',phone:'',place:'',defComm:null};
+  sheet(isNew?'Add '+(type==='mill'?'rice mill':'shop'):'Change details',`
+  <label class="f">Name<input id="pmName" value="${esc(p.name)}"></label>
+  <label class="f">Phone <small>(optional)</small><input id="pmPhone" inputmode="tel" value="${esc(p.phone||'')}"></label>
+  <label class="f">Place <small>(optional)</small><input id="pmPlace" value="${esc(p.place||'')}"></label>
+  <label class="f">Usual ₹ per quintal <small>(optional)</small><input id="pmComm" type="number" inputmode="decimal" step="0.01" min="0" value="${p.defComm??''}"></label>
+  <button class="btn primary huge full" id="pmSave">${isNew?'Add':'Save'}</button>
+  ${!isNew&&!stats(p).ds.length&&!stats(p).ps.length?'<button class="btn danger full" id="pmDel">Remove '+esc(p.name)+'</button>':''}`,()=>{
+    $('pmSave').onclick=async()=>{const name=$('pmName').value.trim();if(!name){toast('Please type a name.');return}
+      const id=p.id||uid();const data={type:p.type,name,phone:$('pmPhone').value.trim(),place:$('pmPlace').value.trim(),defComm:$('pmComm').value===''?null:+$('pmComm').value,createdAt:p.createdAt||Date.now()};if(p.sample)data.sample=true;
+      try{await put('parties',id,data);closeSheet();toast(isNew?'Added '+name:'Saved')}catch(e){}};
+    const pd=$('pmDel');if(pd)armButton(pd,'Tap again to remove',async()=>{await del('parties',p.id);S.view.mills=S.view.shops=null;closeSheet();toast('Removed');render()});
+  });
+}
+function paymentForm(partyId){
+  if(mode==='offline'){toast('Saving is not available here.');return}
+  if(!S.parties.length){toast('Add a mill or shop first.');return}
+  const opts=t=>S.parties.filter(p=>p.type===t).sort((a,b)=>a.name.localeCompare(b.name)).map(p=>`<option value="${p.id}" ${p.id===partyId?'selected':''}>${esc(p.name)}</option>`).join('');
+  sheet('Money received',`
+  <label class="f">Who paid?<select id="pyParty"><option value="">Choose</option><optgroup label="Rice mills">${opts('mill')}</optgroup><optgroup label="Shops">${opts('shop')}</optgroup></select></label>
+  <label class="f">This payment covers entries up to<input type="date" id="pyUpto" value="${today()}"></label>
+  <div class="calc" id="pyCalc"></div>
+  <label class="f">Amount received (₹)<input type="number" inputmode="decimal" step="0.01" min="0" id="pyAmt"></label>
+  <div class="two"><label class="f">Date paid<input type="date" id="pyDate" value="${today()}"></label>
+  <label class="f">How paid<select id="pyMode"><option>Cash</option><option>UPI</option><option>Bank</option><option>Cheque</option></select></label></div>
+  <label class="f">Note <small>(optional)</small><input id="pyNote"></label>
+  <button class="btn primary huge full" id="pySave">Save payment</button>`,()=>{
+    let touched=false;
+    const upd=()=>{const p=party($('pyParty').value),box=$('pyCalc');
+      if(!p){box.innerHTML='<span class="muted">Choose who paid to see how much is due.</span>';return}
+      const s=stats(p),upto=$('pyUpto').value||today(),e=earnedUpto(p,upto),range=e.ds.filter(d=>!s.settled||d.date>s.settled),due=e.amt-s.paid;
+      if(!touched)$('pyAmt').value=due>0?r2(due):'';
+      box.innerHTML=`<span class="lbl">Due up to ${fmtD(upto)}</span><span class="t">${fmtR(Math.max(due,0))}</span>
+      <span class="muted">${range.length} entries since ${s.settled?fmtD(nextDay(s.settled)):'the start'} (${fmtQ(sum(range.map(d=>d.qtl)))} qtl = ${fmtR(sum(range.map(d=>comm(d,p))))})${Math.abs(s.carry)>.005?(s.carry>0?' + old balance '+fmtR(s.carry):' − advance '+fmtR(-s.carry)):''}</span>
+      ${s.settled&&upto<s.settled?'<span class="due">This date is before the last payment ('+fmtD(s.settled)+').</span>':''}
+      <span>Next time, ${esc(p.name)} starts from <b>${fmtD(nextDay(upto))}</b>.</span>`};
+    ['pyParty','pyUpto'].forEach(i=>$(i).addEventListener('input',upd));$('pyAmt').addEventListener('input',()=>touched=true);upd();
+    $('pySave').onclick=async()=>{const pid=$('pyParty').value;
+      if(!pid){toast('Please choose who paid.');return}if(!$('pyUpto').value||!$('pyDate').value){toast('Please fill the dates.');return}
+      if($('pyAmt').value===''||!(+$('pyAmt').value>=0)){toast('Please type the amount.');return}
+      const b=$('pySave');b.disabled=true;
+      try{await put('payments',uid(),{partyId:pid,date:$('pyDate').value,uptoDate:$('pyUpto').value,amount:+$('pyAmt').value,mode:$('pyMode').value,note:$('pyNote').value.trim(),createdAt:Date.now()});closeSheet();toast('Payment saved')}catch(e){b.disabled=false}};
+  });
+}
+function paymentDetail(id){
+  const x=S.payments.find(y=>y.id===id);if(!x)return;const p=party(x.partyId);
+  sheet('Payment',`<div class="card"><div class="kv"><span class="muted">From</span><span>${esc(p?.name||'(removed)')}</span></div><div class="kv"><span class="muted">Amount</span><span class="med">${fmtR(x.amount)}</span></div>
+  <div class="kv"><span class="muted">Date paid</span><span>${fmtD(x.date)}</span></div><div class="kv"><span class="muted">Covers entries up to</span><span>${fmtD(x.uptoDate)}</span></div>
+  <div class="kv"><span class="muted">How paid</span><span>${esc(x.mode||'')}</span></div>${x.note?`<div class="kv"><span class="muted">Note</span><span>${esc(x.note)}</span></div>`:''}</div>
+  <button class="btn danger full" id="pdDel">Delete this payment</button>`,()=>armButton($('pdDel'),'Tap again to delete',async()=>{await del('payments',id);closeSheet();toast('Payment deleted')}));
+}
+
+/* ---------- cards ---------- */
+function entryCard(d){
+  return `<button class="card entry" data-entry="${d.id}"><div class="route">${esc(pname(d.millId))} <span class="arrow">→</span> ${esc(pname(d.shopId))}</div>
+  <div class="row between"><span class="muted">${esc(d.rice)} · ${fmtQ(d.qtl)} qtl${samplePill(d)}</span><span class="med">${fmtR(d.qtl*(d.millComm+d.shopComm))}</span></div></button>`;
+}
+function groupedEntries(ds){
+  let out='',last='';ds.forEach(d=>{if(d.date!==last){last=d.date;out+=`<div class="datehead">${fmtD(d.date)}</div>`}out+=entryCard(d)});return out;
+}
+
+/* ---------- tabs ---------- */
+function renderHome(){
+  const mills=S.parties.filter(p=>p.type==='mill').map(stats),shops=S.parties.filter(p=>p.type==='shop').map(stats);
+  const dm=sum(mills.map(s=>Math.max(s.balance,0))),dsh=sum(shops.map(s=>Math.max(s.balance,0)));
+  const mo=today().slice(0,7),md=S.deals.filter(d=>(d.date||'').slice(0,7)===mo);
+  const recent=S.deals.slice().sort(byDate).reverse().slice(0,5);
+  const nOwe=mills.filter(s=>s.balance>.005).length+shops.filter(s=>s.balance>.005).length;
+  $('tab-home').innerHTML=`
+  <button class="card owecard" data-go="dues"><span class="lbl">Everyone owes you</span><span class="big">${fmtR(dm+dsh)}</span>
+    <div class="two"><div><div class="muted">Mills</div><div class="med">${fmtR(dm)}</div></div><div><div class="muted">Shops</div><div class="med">${fmtR(dsh)}</div></div></div>
+    <span class="seeall">See who owes how much (${nOwe}) →</span></button>
+  <button class="btn primary huge full" data-new>＋ New entry</button>
+  <button class="btn huge full" data-pay>₹ Money received</button>
+  <div class="card"><span class="lbl">${new Date().toLocaleString('en-IN',{month:'long'})} so far</span>
+    <div class="two"><div><div class="med">${fmtQ(sum(md.map(d=>d.qtl)))} qtl</div><div class="muted">${md.length} loads</div></div><div><div class="med">${fmtR(sum(md.map(d=>d.qtl*(d.millComm+d.shopComm))))}</div><div class="muted">earned</div></div></div></div>
+  <div class="row between"><h2>Latest entries</h2>${S.deals.length?'<button class="back" data-go="entries">See all</button>':''}</div>
+  ${recent.length?groupedEntries(recent):`<div class="card empty"><strong>${S.loaded?'No entries yet':'Loading…'}</strong>${S.loaded?'Tap “New entry” to log your first load.':''}</div>`}
+  <button class="btn full" data-go="payments">See all payments</button>
+  <button class="btn full" data-backup>Backup & restore</button>`;
+}
+function filteredDeals(){
+  const q=riceKey(S.search);
+  return S.deals.filter(d=>(!S.from||d.date>=S.from)&&(!S.to||d.date<=S.to)&&(!q||pname(d.millId).toLowerCase().includes(q)||pname(d.shopId).toLowerCase().includes(q)||riceKey(d.rice).includes(q))).sort(byDate).reverse();
+}
+function renderEntries(){
+  const box=$('tab-entries');
+  if(!box.dataset.built){
+    box.innerHTML=`<button class="btn primary huge full" data-new>＋ New entry</button>
+    <div class="seg" role="tablist"><button id="segDay" role="tab">Day by day</button><button id="segAll" role="tab">All entries</button></div>
+    <div id="dayMode" class="stack">
+      <div class="daynav"><button class="btn" id="dPrev" aria-label="Earlier day">◀</button><input type="date" id="dPick" aria-label="Pick a date"><button class="btn" id="dNext" aria-label="Later day">▶</button></div>
+      <div id="dayBody" class="stack"></div>
+    </div>
+    <div id="allMode" class="stack" hidden>
+    <div class="search"><input id="qSearch" type="search" placeholder="Search mill, shop or rice" aria-label="Search"><button class="btn" id="qDatesBtn">Dates</button></div>
+    <div class="two" id="qDates" hidden><label class="f">From<input type="date" id="qFrom"></label><label class="f">To<input type="date" id="qTo"></label></div>
+    <div id="entryList" class="stack"></div></div>`;
+    box.dataset.built='1';
+    const setMode=m=>{S.entryMode=m;$('dayMode').hidden=m!=='day';$('allMode').hidden=m!=='all';$('segDay').setAttribute('aria-selected',m==='day');$('segAll').setAttribute('aria-selected',m==='all');renderEntries()};
+    $('segDay').onclick=()=>setMode('day');$('segAll').onclick=()=>setMode('all');
+    $('dPick').addEventListener('input',e=>{if(e.target.value){S.day=e.target.value;renderDay()}});
+    const jump=dir=>{const ds=activeDays();const cur=S.day||today();const t=dir<0?ds.filter(x=>x<cur).pop():ds.find(x=>x>cur);if(t){S.day=t;renderDay()}else toast(dir<0?'No earlier entries':'No later entries')};
+    $('dPrev').onclick=()=>jump(-1);$('dNext').onclick=()=>jump(1);
+    setMode(S.entryMode||'day');return;
+    $('qSearch').addEventListener('input',e=>{S.search=e.target.value;renderEntryList()});
+    $('qFrom').addEventListener('input',e=>{S.from=e.target.value;renderEntryList()});
+    $('qTo').addEventListener('input',e=>{S.to=e.target.value;renderEntryList()});
+    $('qDatesBtn').onclick=()=>{const h=$('qDates');h.hidden=!h.hidden;if(h.hidden){S.from=S.to='';$('qFrom').value=$('qTo').value='';renderEntryList()}};
+  }
+  if((S.entryMode||'day')==='day')renderDay();else renderEntryList();
+}
+function activeDays(){const s=new Set();S.deals.forEach(d=>d.date&&s.add(d.date));S.payments.forEach(x=>x.date&&s.add(x.date));return [...s].sort()}
+function dayData(day){const ds=S.deals.filter(d=>d.date===day).sort(byDate),ps=S.payments.filter(x=>x.date===day).sort(byDate);
+  return {ds,ps,qtl:sum(ds.map(d=>d.qtl)),mc:sum(ds.map(d=>d.qtl*d.millComm)),sc:sum(ds.map(d=>d.qtl*d.shopComm)),paid:sum(ps.map(x=>x.amount))}}
+function renderDay(){
+  const days=activeDays();
+  if(!S.day)S.day=days.length?days[days.length-1]:today();
+  $('dPick').value=S.day;
+  const box=$('dayBody');
+  if(!S.loaded){box.innerHTML='<div class="card empty"><strong>Loading…</strong></div>';return}
+  const dd=dayData(S.day),wk=new Date(S.day+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long'});
+  const recent=days.slice().reverse().filter(x=>x!==S.day).slice(0,10);
+  box.innerHTML=`<div class="card daycard"><span class="lbl">${wk}</span><h2>${fmtD(S.day)}</h2>
+    ${dd.ds.length||dd.ps.length?`<div class="two"><div><div class="muted">Loads</div><div class="med">${dd.ds.length} · ${fmtQ(dd.qtl)} qtl</div></div><div><div class="muted">You earned</div><div class="med">${fmtR(dd.mc+dd.sc)}</div></div></div>
+    <div class="kv"><span class="muted">From mills</span><span>${fmtR(dd.mc)}</span></div><div class="kv"><span class="muted">From shops</span><span>${fmtR(dd.sc)}</span></div>
+    ${dd.ps.length?`<div class="kv"><span class="muted">Money received</span><span class="clear">${fmtR(dd.paid)}</span></div>`:''}
+    <button class="btn full" data-dl="day">Download this day</button>`:'<span class="muted">No loads or payments on this day.</span>'}</div>
+  ${dd.ds.length?'<h2>Loads</h2>'+dd.ds.map(entryCard).join(''):''}
+  ${dd.ps.length?'<h2>Money received</h2>'+dd.ps.map(x=>{const p=party(x.partyId);return `<button class="card payline" data-payment="${x.id}"><div class="row between"><span style="font-weight:800">${esc(p?.name||'(removed)')}${samplePill(x)}</span><span class="med clear">${fmtR(x.amount)}</span></div><span class="muted">${esc(x.mode||'')} · covers till ${fmtD(x.uptoDate)}</span></button>`}).join(''):''}
+  ${recent.length?`<h2>Other days</h2>${recent.map(day=>{const x=dayData(day);return `<button class="card" data-day="${day}"><div class="row between"><span style="font-weight:800">${fmtD(day)}</span><span class="med">${fmtR(x.mc+x.sc)}</span></div><span class="muted">${x.ds.length} loads · ${fmtQ(x.qtl)} qtl${x.ps.length?' · received '+fmtR(x.paid):''}</span></button>`}).join('')}`:''}
+  ${days.length?'<button class="btn full" data-dl="daysummary">Download day-wise summary (all days)</button>':''}`;
+}
+function renderEntryList(){
+  const ds=filteredDeals(),box=$('entryList');
+  if(!S.deals.length){box.innerHTML=`<div class="card empty"><strong>${S.loaded?'No entries yet':'Loading…'}</strong>${S.loaded?'Tap “New entry” to log your first load.':''}</div>`;return}
+  if(!ds.length){box.innerHTML='<div class="card empty">Nothing matches your search.</div>';return}
+  box.innerHTML=`<div class="card"><div class="two"><div><div class="lbl">Loads</div><div class="med">${ds.length} · ${fmtQ(sum(ds.map(d=>d.qtl)))} qtl</div></div><div><div class="lbl">Earned</div><div class="med">${fmtR(sum(ds.map(d=>d.qtl*(d.millComm+d.shopComm))))}</div></div></div>
+  <button class="btn full" data-dl="entries">Download this list</button></div>${groupedEntries(ds)}`;
+}
+function renderParties(type){
+  const key=type==='mill'?'mills':'shops',box=$('tab-'+key),word=type==='mill'?'mill':'shop';
+  const sel=S.view[key]&&party(S.view[key]);
+  if(sel){box.innerHTML=statement(sel);return}
+  const list=S.parties.filter(p=>p.type===type).map(p=>({p,s:stats(p)})).sort((a,b)=>b.s.balance-a.s.balance||a.p.name.localeCompare(b.p.name));
+  box.innerHTML=`<h2>${type==='mill'?'Rice mills':'Shops'}</h2>
+  <div class="card"><span class="lbl">Total pending</span><span class="big">${fmtR(sum(list.map(x=>Math.max(x.s.balance,0))))}</span></div>
+  ${list.length?list.map(({p,s})=>`<button class="card" data-open="${key}:${p.id}"><div class="row between"><span class="route" style="font-weight:800;font-size:1.1rem">${esc(p.name)}${samplePill(p)}</span><span class="med">${balText(s.balance)}</span></div>
+  <span class="muted">${s.ds.length} loads · ${fmtQ(s.qtl)} qtl · ${s.settled?'paid till '+fmtD(s.settled):'never paid'}</span></button>`).join(''):`<div class="card empty"><strong>No ${word}s yet</strong>Add one here, or from the entry form.</div>`}
+  <button class="btn primary full" data-add="${type}">＋ Add ${type==='mill'?'rice mill':'shop'}</button>
+  ${list.length?`<button class="btn full" data-dl="${type}">Download ${word} list</button>`:''}`;
+}
+function ledger(p,s){
+  const ev=[...s.ds.map(d=>({k:'d',date:d.date,c:d.createdAt||0,d})),...s.ps.map(x=>({k:'p',date:x.date,c:x.createdAt||0,x}))].sort((a,b)=>a.date.localeCompare(b.date)||(a.k===b.k?a.c-b.c:a.k==='d'?-1:1));
+  let bal=0;return ev.map(e=>{if(e.k==='d'){const a=comm(e.d,p);bal+=a;return {...e,amt:a,bal}}bal-=(+e.x.amount||0);return {...e,amt:+e.x.amount||0,bal}});
+}
+function statement(p){
+  const s=stats(p),key=p.type==='mill'?'mills':'shops',rk=p.type==='mill'?'millComm':'shopComm';
+  const L=ledger(p,s).reverse(),start=s.settled?nextDay(s.settled):null,dueNow=s.periodAmt+s.carry;
+  let markerDone=!start,items='';
+  L.forEach(e=>{
+    if(!markerDone&&!(e.k==='d'&&e.date>s.settled)){markerDone=true;items+=`<div class="marker">Above: current period, from ${fmtD(start)}</div>`}
+    if(e.k==='d')items+=`<button class="card" data-entry="${e.d.id}"><div class="row between"><span class="muted">${fmtD(e.date)}</span><span class="med">+${fmtR(e.amt)}</span></div>
+      <span><b>${esc(pname(p.type==='mill'?e.d.shopId:e.d.millId))}</b> · ${esc(e.d.rice)} · ${fmtQ(e.d.qtl)} qtl × ₹${fmtQ(e.d[rk])}</span><span class="muted">Balance after: ${fmtR(e.bal)}</span></button>`;
+    else items+=`<button class="card payline" data-payment="${e.x.id}"><div class="row between"><span class="muted">${fmtD(e.date)}</span><span class="med clear">−${fmtR(e.amt)}</span></div>
+      <span><b>Money received</b> · ${esc(e.x.mode||'')} · covers till ${fmtD(e.x.uptoDate)}</span><span class="muted">Balance after: ${fmtR(e.bal)}</span></button>`;
+  });
+  if(!markerDone)items+=`<div class="marker">Above: current period, from ${fmtD(start)}</div>`;
+  return `<button class="back" data-back="${key}">← Back to all ${p.type==='mill'?'mills':'shops'}</button>
+  <div class="card"><div class="row"><h2>${esc(p.name)}</h2><span class="pill ${p.type}">${p.type==='mill'?'Mill':'Shop'}</span>${samplePill(p)}</div>
+    ${p.place||p.phone?`<span class="muted">${[p.place,p.phone].filter(Boolean).map(esc).join(' · ')}</span>`:''}</div>
+  <div class="period"><span class="lbl">Due now</span><span class="big ${dueNow>.005?'due':'clear'}">${dueNow>.005?fmtR(dueNow):dueNow<-.005?fmtR(-dueNow)+' advance':'All clear'}</span>
+    <span>${s.periodDeals.length} loads since ${start?fmtD(start):'the start'} = ${fmtR(s.periodAmt)}${Math.abs(s.carry)>.005?(s.carry>0?' + old balance '+fmtR(s.carry):' − advance '+fmtR(-s.carry)):''}</span>
+    <span class="muted">${s.settled?'Last paid till '+fmtD(s.settled):'No payment yet'}</span></div>
+  <button class="btn primary huge full" data-pay="${p.id}">₹ Money received</button>
+  <div class="card"><div class="kv"><span class="muted">Total earned</span><span>${fmtR(s.earned)}</span></div><div class="kv"><span class="muted">Total paid</span><span>${fmtR(s.paid)}</span></div><div class="kv"><span class="muted">Quintals</span><span>${fmtQ(s.qtl)}</span></div></div>
+  <h2>History</h2>
+  ${items||'<div class="card empty">No loads or payments yet.</div>'}
+  <button class="btn full" data-statement="${p.id}">Download khata</button>
+  <button class="btn full" data-editparty="${p.id}">Change details</button>`;
+}
+function riceAgg(){
+  const m=new Map();
+  S.deals.slice().sort(byDate).forEach(d=>{const k=riceKey(d.rice);if(!k)return;if(!m.has(k))m.set(k,{key:k,name:d.rice.trim(),n:0,qtl:0,pts:[]});const v=m.get(k);v.n++;v.qtl+=+d.qtl||0;if(d.rate!=null&&d.rate!=='')v.pts.push({date:d.date,rate:+d.rate,qtl:+d.qtl||0,d})});
+  return [...m.values()].map(v=>{const rs=v.pts.map(p=>p.rate),wq=sum(v.pts.map(p=>p.qtl));return {...v,last:v.pts[v.pts.length-1],prev:v.pts[v.pts.length-2],avg:wq?sum(v.pts.map(p=>p.rate*p.qtl))/wq:null,min:rs.length?Math.min(...rs):null,max:rs.length?Math.max(...rs):null}}).sort((a,b)=>b.qtl-a.qtl);
+}
+function spark(pts,w,h){
+  if(pts.length<2)return '';
+  const rs=pts.map(p=>p.rate),lo=Math.min(...rs),hi=Math.max(...rs),sp=hi-lo||1;
+  const xy=pts.map((p,i)=>[4+i*(w-8)/(pts.length-1),h-6-(p.rate-lo)/sp*(h-12)]);
+  const d=xy.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join(' '),last=xy[xy.length-1];
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none" aria-hidden="true"><path d="${d} L${last[0].toFixed(1)} ${h} L4 ${h} Z" fill="var(--accent-soft)"/><path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2.5" vector-effect="non-scaling-stroke"/></svg>`;
+}
+function trend(v){if(!v.prev)return '';const df=v.last.rate-v.prev.rate;if(Math.abs(df)<.005)return '<span class="muted">same as before</span>';return df>0?`<span class="due">▲ up ${fmtR(df)}</span>`:`<span class="clear">▼ down ${fmtR(-df)}</span>`}
+function renderRice(){
+  const box=$('tab-rice'),agg=riceAgg(),sel=S.view.rice&&agg.find(v=>v.key===S.view.rice);
+  if(sel){
+    const byMill=new Map();sel.pts.forEach(p=>byMill.set(p.d.millId,p));
+    box.innerHTML=`<button class="back" data-riceback>← Back to all rice</button>
+    <div class="card"><h2>${esc(sel.name)}</h2><span class="lbl">Latest price</span><span class="big">${sel.last?fmtR(sel.last.rate):'—'}</span><span class="muted">${sel.last?'per quintal · '+fmtD(sel.last.date):'No prices entered yet'}</span>${sel.last?trend(sel):''}
+    ${spark(sel.pts,300,80)}</div>
+    <div class="card"><div class="kv"><span class="muted">Average</span><span>${sel.avg?fmtR(sel.avg):'—'}</span></div><div class="kv"><span class="muted">Lowest</span><span>${sel.min!=null?fmtR(sel.min):'—'}</span></div><div class="kv"><span class="muted">Highest</span><span>${sel.max!=null?fmtR(sel.max):'—'}</span></div><div class="kv"><span class="muted">Total moved</span><span>${fmtQ(sel.qtl)} qtl</span></div></div>
+    <h2>Latest price at each mill</h2>
+    <div class="card">${[...byMill.entries()].sort((a,b)=>a[1].rate-b[1].rate).map(([m,p])=>`<div class="kv"><span>${esc(pname(m))}<br><span class="muted">${fmtD(p.date)}</span></span><span>${fmtR(p.rate)}</span></div>`).join('')||'<span class="muted">No prices entered</span>'}</div>
+    <h2>Price history</h2>
+    <div class="card">${sel.pts.slice().reverse().map(p=>`<div class="kv"><span>${fmtD(p.date)}<br><span class="muted">${esc(pname(p.d.millId))} → ${esc(pname(p.d.shopId))}</span></span><span>${fmtR(p.rate)}</span></div>`).join('')||'<span class="muted">No prices entered</span>'}</div>`;
+    return;
+  }
+  box.innerHTML=`<h2>Rice prices</h2><p class="muted" style="margin:0">From the rice price you type in each entry. Tap a rice to see more.</p>
+  ${agg.length?agg.map(v=>`<button class="card" data-rice="${esc(v.key)}"><div class="row between"><span style="font-weight:800;font-size:1.1rem">${esc(v.name)}</span><span class="med">${v.last?fmtR(v.last.rate):'—'}</span></div>
+  <div class="row between"><span class="muted">${fmtQ(v.qtl)} qtl · ${v.n} loads</span>${v.last?trend(v):''}</div>${spark(v.pts,300,40)}</button>`).join(''):'<div class="card empty"><strong>No rice yet</strong>Rice types and prices from your entries show up here.</div>'}
+  ${agg.length?'<button class="btn full" data-dl="rice">Download rice prices</button>':''}`;
+}
+function renderPayments(){
+  const ps=S.payments.slice().sort(byDate).reverse();
+  $('tab-payments').innerHTML=`<button class="back" data-go="home">← Back to home</button><h2>All payments</h2>
+  <button class="btn primary huge full" data-pay>₹ Money received</button>
+  ${ps.length?`<div class="card"><span class="lbl">Total received</span><span class="big">${fmtR(sum(ps.map(x=>x.amount)))}</span></div>`+ps.map(x=>{const p=party(x.partyId);return `<button class="card" data-payment="${x.id}"><div class="row between"><span style="font-weight:800">${esc(p?.name||'(removed)')}${samplePill(x)}</span><span class="med clear">${fmtR(x.amount)}</span></div><span class="muted">${fmtD(x.date)} · ${esc(x.mode||'')} · covers till ${fmtD(x.uptoDate)}</span></button>`}).join('')
+  +'<button class="btn full" data-dl="payments">Download payments</button>':'<div class="card empty"><strong>No payments yet</strong>When a mill or shop pays you, tap “Money received”.</div>'}`;
+}
+function renderDues(){
+  const all=S.parties.map(p=>({p,s:stats(p)}));
+  const owe=all.filter(x=>x.s.balance>.005).sort((a,b)=>b.s.balance-a.s.balance);
+  const adv=all.filter(x=>x.s.balance<-.005);
+  const clear=all.filter(x=>Math.abs(x.s.balance)<=.005);
+  const tm=sum(owe.filter(x=>x.p.type==='mill').map(x=>x.s.balance)),ts=sum(owe.filter(x=>x.p.type==='shop').map(x=>x.s.balance));
+  const row=({p,s})=>{const key=p.type==='mill'?'mills':'shops';const oldest=s.periodDeals[0]?.date;
+    return `<button class="card oweline ${p.type}" data-open="${key}:${p.id}"><div class="row between"><span class="route" style="font-weight:800;font-size:1.15rem">${esc(p.name)}${samplePill(p)}</span><span class="med due">${fmtR(s.balance)}</span></div>
+    <div class="row between"><span class="pill ${p.type}">${p.type==='mill'?'Mill':'Shop'}</span><span class="muted">${s.settled?'Paid till '+fmtD(s.settled):'Never paid'}${oldest?' · pending since '+fmtD(oldest):''}</span></div></button>`};
+  $('tab-dues').innerHTML=`<button class="back" data-go="home">← Back to home</button>
+  <div class="card owecard"><span class="lbl">Total money owed to you</span><span class="big">${fmtR(tm+ts)}</span>
+    <div class="two"><div><div class="muted">From mills</div><div class="med">${fmtR(tm)}</div></div><div><div class="muted">From shops</div><div class="med">${fmtR(ts)}</div></div></div>
+    <span class="muted">As on ${fmtD(today())}</span></div>
+  <h2>Who owes you${owe.length?' ('+owe.length+')':''}</h2>
+  ${owe.length?owe.map(row).join(''):`<div class="card empty"><strong>${S.loaded?'Nobody owes you right now':'Loading…'}</strong></div>`}
+  ${adv.length?`<h2>Paid you in advance</h2><div class="card">${adv.map(({p,s})=>`<div class="kv"><span>${esc(p.name)} <span class="pill ${p.type}">${p.type==='mill'?'Mill':'Shop'}</span></span><span class="adv">${fmtR(-s.balance)}</span></div>`).join('')}</div>`:''}
+  ${clear.length?`<h2>All clear</h2><div class="card"><span>${clear.map(({p})=>esc(p.name)).join(', ')}</span></div>`:''}
+  ${all.length?'<button class="btn full" data-dl="dues">Download who owes me</button>':''}`;
+}
+function renderBanners(){
+  let h='';
+  const ns=S.parties.filter(x=>x.sample).length+S.deals.filter(x=>x.sample).length+S.payments.filter(x=>x.sample).length;
+  if(ns)h+='<div class="banner warn"><span>Rows marked <b>sample</b> are examples. Remove them before you start.</span><button class="btn full" id="clrSamples">Remove sample data</button></div>';
+  $('banners').innerHTML=h;
+  const b=$('clrSamples');if(b)armButton(b,'Tap again to remove samples',async()=>{const jobs=[];['deals','payments','parties'].forEach(c=>S[c].filter(x=>x.sample).forEach(x=>jobs.push([c,x.id])));for(const [c,id] of jobs)await del(c,id);toast('Sample data removed')});
+}
+
+/* ---------- navigation ---------- */
+function showTab(t){
+  S.tab=t;TABS.forEach(k=>$('tab-'+k).hidden=k!==t);
+  document.querySelectorAll('[data-nav]').forEach(b=>{if(b.dataset.nav===t)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
+  render();window.scrollTo({top:0});
+}
+function render(){
+  renderBanners();
+  ({home:renderHome,entries:renderEntries,mills:()=>renderParties('mill'),shops:()=>renderParties('shop'),rice:renderRice,payments:renderPayments,dues:renderDues})[S.tab]();
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-backup],[data-day],[data-nav],[data-go],[data-new],[data-pay],[data-entry],[data-payment],[data-open],[data-back],[data-add],[data-editparty],[data-statement],[data-dl],[data-rice],[data-riceback]');
+  if(!t)return;const d=t.dataset;
+  if(d.nav){if(d.nav==='mills'||d.nav==='shops')S.view[d.nav]=null;if(d.nav==='rice')S.view.rice=null;showTab(d.nav);return}
+  if(d.go){showTab(d.go);return}
+  if(d.new!==undefined){entryForm(null);return}
+  if(d.pay!==undefined){paymentForm(d.pay);return}
+  if(d.entry){entryDetail(d.entry);return}
+  if(d.payment){paymentDetail(d.payment);return}
+  if(d.open){const [k,id]=d.open.split(':');S.view[k]=id;showTab(k);return}
+  if(d.back){S.view[d.back]=null;render();return}
+  if(d.add){partyForm(d.add);return}
+  if(d.editparty){partyForm(null,party(d.editparty));return}
+  if(d.backup!==undefined){backupSheet();return}
+  if(d.day){S.day=d.day;renderDay();$('dPick').scrollIntoView({behavior:'smooth',block:'center'});return}
+  if(d.rice){S.view.rice=d.rice;render();window.scrollTo({top:0});return}
+  if(d.riceback!==undefined){S.view.rice=null;render();return}
+  if(d.statement){const p=party(d.statement),s=stats(p);const rows=[[p.name+' - '+(p.type==='mill'?'Rice mill':'Shop')+' khata'],['Made on',csvD(today())],[],['Date','Type',p.type==='mill'?'Shop':'Rice mill','Rice','Quintals','Rs per qtl','Earned','Paid','Balance','Covers till','Note']];
+    ledger(p,s).forEach(e=>{if(e.k==='d')rows.push([csvD(e.date),'Load',pname(p.type==='mill'?e.d.shopId:e.d.millId),e.d.rice,e.d.qtl,p.type==='mill'?e.d.millComm:e.d.shopComm,r2(e.amt),'',r2(e.bal),'',e.d.note||'']);else rows.push([csvD(e.date),'Payment ('+(e.x.mode||'')+')','','','','','',r2(e.amt),r2(e.bal),csvD(e.x.uptoDate),e.x.note||''])});
+    rows.push([],['Total earned',r2(s.earned)],['Total paid',r2(s.paid)],['Balance',r2(s.balance)],['Paid till',csvD(s.settled)||'Never'],['Current period from',s.settled?csvD(nextDay(s.settled)):'First entry']);
+    saveCSV(p.name.replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-')+'-khata-'+today()+'.csv',rows);return}
+  if(d.dl){
+    if(d.dl==='day'){const dd=dayData(S.day);const rows=entriesRows(dd.ds);rows.unshift(['Day book - '+csvD(S.day)],[]);
+      rows.push([],['Loads',dd.ds.length],['Quintals',r2(dd.qtl)],['From mills',r2(dd.mc)],['From shops',r2(dd.sc)],['Total earned',r2(dd.mc+dd.sc)]);
+      if(dd.ps.length){rows.push([],['Money received'],['From','Amount','Covers till','How paid','Note']);dd.ps.forEach(x=>rows.push([pname(x.partyId),x.amount,csvD(x.uptoDate),x.mode||'',x.note||'']));rows.push(['Total received',r2(dd.paid)])}
+      saveCSV('day-book-'+S.day+'.csv',rows);}
+    else if(d.dl==='daysummary'){const rows=[['Date','Day','Loads','Quintals','From mills','From shops','Total earned','Money received']];
+      activeDays().forEach(day=>{const x=dayData(day);rows.push([csvD(day),new Date(day+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long'}),x.ds.length,r2(x.qtl),r2(x.mc),r2(x.sc),r2(x.mc+x.sc),r2(x.paid)])});
+      const a=S.deals;rows.push([],['Total','',a.length,r2(sum(a.map(d=>d.qtl))),r2(sum(a.map(d=>d.qtl*d.millComm))),r2(sum(a.map(d=>d.qtl*d.shopComm))),r2(sum(a.map(d=>d.qtl*(d.millComm+d.shopComm)))),r2(sum(S.payments.map(x=>x.amount)))]);
+      saveCSV('day-wise-summary-'+today()+'.csv',rows);}
+    else if(d.dl==='dues'){const rows=[['Who owes me - as on '+csvD(today())],[],['Name','Type','Amount owed','Paid till','Pending since','Loads since last payment']];
+      S.parties.map(p=>({p,s:stats(p)})).sort((a,b)=>b.s.balance-a.s.balance).forEach(({p,s})=>rows.push([p.name,p.type==='mill'?'Rice mill':'Shop',r2(s.balance),csvD(s.settled)||'Never',csvD(s.periodDeals[0]?.date),s.periodDeals.length]));
+      const all=S.parties.map(stats);rows.push([],['Total owed',r2(sum(all.map(s=>Math.max(s.balance,0))))]);
+      saveCSV('who-owes-me-'+today()+'.csv',rows);}
+    else if(d.dl==='entries')saveCSV('rice-entries-'+today()+'.csv',entriesRows(filteredDeals()));
+    else if(d.dl==='mill'||d.dl==='shop')saveCSV((d.dl==='mill'?'rice-mills-':'shops-')+today()+'.csv',partyListRows(d.dl));
+    else if(d.dl==='rice'){const rows=[['Rice','Loads','Total quintals','Latest price (Rs/qtl)','Latest date','Average','Lowest','Highest']];riceAgg().forEach(v=>rows.push([v.name,v.n,r2(v.qtl),v.last?.rate??'',v.last?csvD(v.last.date):'',v.avg?r2(v.avg):'',v.min??'',v.max??'']));saveCSV('rice-prices-'+today()+'.csv',rows)}
+    else if(d.dl==='payments'){const rows=[['Date paid','From','Type','Amount','Covers entries till','How paid','Note']];S.payments.slice().sort(byDate).forEach(x=>{const p=party(x.partyId);rows.push([csvD(x.date),p?.name||'(removed)',p?.type==='mill'?'Rice mill':'Shop',x.amount,csvD(x.uptoDate),x.mode||'',x.note||''])});saveCSV('payments-'+today()+'.csv',rows)}
+    return}
+});
+
+/* ---------- back button (called by Android) ---------- */
+window.handleBack=function(){
+  if($('ov')){closeSheet();return true}
+  if((S.tab==='mills'||S.tab==='shops')&&S.view[S.tab]){S.view[S.tab]=null;render();return true}
+  if(S.tab==='rice'&&S.view.rice){S.view.rice=null;render();return true}
+  if(S.tab!=='home'){showTab('home');return true}
+  return false;
+};
+
+/* ---------- boot ---------- */
+mode='live';loadLocal();S.loaded=true;
+showTab('home');
+})();
+</script>
+</body>
+</html>
